@@ -1,4 +1,4 @@
-import { StatusBar } from 'expo-status-bar';
+import {StatusBar} from 'expo-status-bar';
 import React from 'react';
 import Loading from "./Loading";
 import Weather from "./Weather";
@@ -9,34 +9,44 @@ import axios from "axios";
 const API_KEY = "d5a87b4e128ed647179df4904bb0ae9f";
 
 export default class extends React.Component {
-  state={
+  state = {
     isLoading: true,
   };
 
-  getWeather = async(latitude, longitude) => {
-    const { data } = await axios.get(
+  getWeather = async (latitude, longitude) => {
+    const {
+      data: {
+        main: {temp},
+        weather
+      }
+    } = await axios.get(
       `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${API_KEY}&units=metric`)
-    this.setState({isLoading: false, condition: "Clear", temp: data.main.temp});
+    this.setState({
+      isLoading: false,
+      condition: weather[0].main,
+      temp
+    });
 
   }
 
-  getLocation = async() => {
-    try{
+  getLocation = async () => {
+    try {
       await Location.getForegroundPermissionsAsync();
-      const {coords:{latitude, longitude}} = await Location.getCurrentPositionAsync();
+      const {coords: {latitude, longitude}} = await Location.getCurrentPositionAsync();
       this.getWeather(latitude, longitude);
 
-    }catch(error){
-      Alert.alert("Can't find you",'So sad!');
+    } catch (error) {
+      Alert.alert("Can't find you", 'So sad!');
     }
 
   }
+
   componentDidMount() {
     this.getLocation();
   }
 
-  render(){
-    const { isLoading, condition, temp } = this.state;
+  render() {
+    const {isLoading, condition, temp} = this.state;
     return isLoading ? <Loading/> : <Weather temp={Math.round(temp)} condition={condition}/>;
   }
 }
